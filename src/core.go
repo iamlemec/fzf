@@ -168,12 +168,12 @@ func Run(opts *Options, version string, revision string) {
 			opts.Printer(*opts.Filter)
 		}
 
+		slab := util.MakeSlab(slab16Size, slab32Size)
 		pattern := patternBuilder([]rune(*opts.Filter))
 		matcher.sort = pattern.sortable
 
 		found := false
 		if streamingFilter {
-			slab := util.MakeSlab(slab16Size, slab32Size)
 			reader := NewReader(
 				func(runes []byte) bool {
 					item := Item{}
@@ -195,7 +195,8 @@ func Run(opts *Options, version string, revision string) {
 				chunks:  snapshot,
 				pattern: pattern})
 			for i := 0; i < merger.Length(); i++ {
-				opts.Printer(merger.Get(i).item.AsString(opts.Ansi))
+				item := merger.Get(i).item
+				PrintHighlight(item, pattern, slab, HighlightANSI)
 				found = true
 			}
 		}
