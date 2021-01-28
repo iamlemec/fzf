@@ -18,16 +18,6 @@ func PrintHighlight (item *Item, pattern *Pattern, slab *util.Slab, htype Highli
     text := item.AsString(false)
     _, offsets, locs := pattern.MatchItem(item, true, slab)
 
-    /*
-    for _, off := range offsets {
-        fmt.Print("(", off[0], off[1], ") ")
-    }
-    for _, p := range *locs {
-        fmt.Print(p, " ")
-    }
-    fmt.Print("\n")
-    */
-
     open := ""
     close := ""
     if htype == HighlightHTML {
@@ -95,6 +85,3 @@ func PrintHighlight (item *Item, pattern *Pattern, slab *util.Slab, htype Highli
 
     fmt.Println(out)
 }
-
-// fmt.Print("\x1b[31m")
-// fmt.Print("\x1b[0m")
