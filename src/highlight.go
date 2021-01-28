@@ -1,7 +1,7 @@
 package fzf
 
 import (
-    "fmt"
+    "bytes"
     "html"
 
     "github.com/junegunn/fzf/src/util"
@@ -14,7 +14,7 @@ const (
     HighlightANSI HighlightType = iota
 )
 
-func PrintHighlight (item *Item, pattern *Pattern, slab *util.Slab, htype HighlightType) {
+func PrintHighlight (item *Item, pattern *Pattern, slab *util.Slab, htype HighlightType) (string) {
     text := item.AsString(false)
     _, offsets, locs := pattern.MatchItem(item, true, slab)
 
@@ -30,17 +30,18 @@ func PrintHighlight (item *Item, pattern *Pattern, slab *util.Slab, htype Highli
 
     lpos := len(*locs) - 1
     lval := (*locs)[lpos]
-    high := false
-    buf := ""
 
+    high := false
     pos := 0
-    out := ""
+
+    out := new(bytes.Buffer)
+    buf := new(bytes.Buffer)
 
     for _, off := range offsets {
         off0 := int(off[0])
         off1 := int(off[1])
 
-        out += html.EscapeString(text[pos:off0])
+        out.WriteString(html.EscapeString(text[pos:off0]))
 
         for i := off0; i < off1; i++ {
             if lpos >= 0 {
@@ -54,34 +55,34 @@ func PrintHighlight (item *Item, pattern *Pattern, slab *util.Slab, htype Highli
             }
 
             if high && i != lval {
-                out += html.EscapeString(buf)
-                out += close
+                out.WriteString(html.EscapeString(buf.String()))
+                out.WriteString(close)
                 high = false
-                buf = ""
+                buf.Reset()
             }
 
             if !high && i == lval {
-                out += html.EscapeString(buf)
-                out += open
+                out.WriteString(html.EscapeString(buf.String()))
+                out.WriteString(open)
                 high = true
-                buf = ""
+                buf.Reset()
             }
 
-            buf += string(text[i])
+            buf.WriteByte(text[i])
         }
 
         if high {
-            out += html.EscapeString(buf)
-            out += close
+            out.WriteString(html.EscapeString(buf.String()))
+            out.WriteString(close)
             high = false
-            buf = ""
+            buf.Reset()
         }
 
         pos = off1
     }
 
-    buf += text[pos:]
-    out += html.EscapeString(buf)
+    buf.WriteString(text[pos:])
+    out.WriteString(html.EscapeString(buf.String()))
 
-    fmt.Println(out)
+    return out.String()
 }

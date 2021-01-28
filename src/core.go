@@ -196,7 +196,8 @@ func Run(opts *Options, version string, revision string) {
 				pattern: pattern})
 			for i := 0; i < merger.Length(); i++ {
 				item := merger.Get(i).item
-				PrintHighlight(item, pattern, slab, HighlightANSI)
+				text := PrintHighlight(item, pattern, slab, HighlightANSI)
+				opts.Printer(text)
 				found = true
 			}
 		}
