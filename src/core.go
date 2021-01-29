@@ -190,13 +190,15 @@ func Run(opts *Options, version string, revision string) {
 			eventBox.Unwatch(EvtReadNew)
 			eventBox.WaitFor(EvtReadFin)
 
+			high := NewHighlighter(HighlightANSI, slab)
+
 			snapshot, _ := chunkList.Snapshot()
 			merger, _ := matcher.scan(MatchRequest{
 				chunks:  snapshot,
 				pattern: pattern})
 			for i := 0; i < merger.Length(); i++ {
 				item := merger.Get(i).item
-				text := PrintHighlight(item, pattern, slab, HighlightANSI)
+				text := high.RenderHighlight(item, pattern)
 				opts.Printer(text)
 				found = true
 			}
