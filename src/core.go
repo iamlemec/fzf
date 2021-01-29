@@ -190,7 +190,7 @@ func Run(opts *Options, version string, revision string) {
 			eventBox.Unwatch(EvtReadNew)
 			eventBox.WaitFor(EvtReadFin)
 
-			high := NewHighlighter(HighlightANSI, slab)
+			high := NewHighlighter(HighlightHTML, slab)
 
 			snapshot, _ := chunkList.Snapshot()
 			merger, _ := matcher.scan(MatchRequest{
