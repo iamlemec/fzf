@@ -25,8 +25,6 @@ func makeSegments (length int, locs *[]int) (c chan [2]int) {
         s1 := -1
 
         for i := 0; i < length; i++ {
-            // fmt.Println(i, lval, high, s0, s1)
-
             if high {
                 if i != lval {
                     s1 = i
