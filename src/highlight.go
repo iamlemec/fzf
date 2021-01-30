@@ -1,7 +1,6 @@
 package fzf
 
 import (
-    // "fmt"
     "bytes"
     "html"
 
@@ -117,24 +116,15 @@ func (high *Highlighter) RenderHighlight (item *Item, pattern *Pattern) (string)
     chars := []rune(text)
     length := len(chars)
 
-    /*
-    fmt.Println(text)
-    for i, x := range *locs {
-        fmt.Println(i, x)
-    }
-    */
-
     high.reset()
     pos := 0
 
     for off := range makeSegments(length, locs) {
-        off0 := off[0]
-        off1 := off[1]
-        high.write(chars[pos:off0])
+        high.write(chars[pos:off[0]])
         high.open()
-        high.write(chars[off0:off1])
+        high.write(chars[off[0]:off[1]])
         high.close()
-        pos = off1
+        pos = off[1]
     }
 
     high.write(chars[pos:])
