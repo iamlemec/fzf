@@ -1,24 +1,22 @@
 package fzf
 
 import (
+    "sort"
     "bytes"
     "html"
 
     "github.com/junegunn/fzf/src/util"
 )
 
-type HighlightType int
-
-const (
-    HighlightHTML HighlightType = iota
-    HighlightANSI HighlightType = iota
-)
-
 func makeSegments (length int, locs *[]int) (c chan [2]int) {
     c = make(chan [2]int)
     go func() {
-        lpos := len(*locs) - 1
-        lval := (*locs)[lpos]
+        slocs := make([]int, len(*locs))
+        copy(slocs, *locs)
+        sort.Sort(sort.Reverse(sort.IntSlice(slocs)))
+
+        lpos := len(slocs) - 1
+        lval := slocs[lpos]
         high := false
 
         s0 := -1
@@ -42,7 +40,7 @@ func makeSegments (length int, locs *[]int) (c chan [2]int) {
             if i == lval {
                 lpos--
                 if lpos >= 0 {
-                    lval = (*locs)[lpos]
+                    lval = slocs[lpos]
                 } else {
                     lval = -1
                 }
@@ -59,27 +57,27 @@ func makeSegments (length int, locs *[]int) (c chan [2]int) {
 }
 
 type Highlighter struct {
-    slab *util.Slab
     openTag string
     closeTag string
     escapeFunc func (string) string
+    slab *util.Slab
     out *bytes.Buffer
 }
 
-func NewHighlighter (htype HighlightType, slab *util.Slab) *Highlighter {
+func NewHighlighter (htype highlightType, slab *util.Slab) *Highlighter {
     high := Highlighter{
-        slab: slab,
         openTag: "",
         closeTag: "",
         escapeFunc: func (x string) string { return x },
+        slab: slab,
         out: new(bytes.Buffer),
     }
 
-    if htype == HighlightHTML {
+    if htype == highlightHtml {
         high.openTag = "<span class=\"match\">"
         high.closeTag = "</span>"
         high.escapeFunc = html.EscapeString
-    } else if htype == HighlightANSI {
+    } else if htype == highlightAnsi {
         high.openTag = "\x1b[31m"
         high.closeTag = "\x1b[0m"
     }

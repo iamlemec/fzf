@@ -73,6 +73,7 @@ const usage = `usage: fzf [options]
     --tabstop=SPACES      Number of spaces for a tab character (default: 8)
     --color=COLSPEC       Base scheme (dark|light|16|bw) and/or custom colors
     --no-bold             Do not use bold text
+	--highlight=STR       Highlight matches in filter mode (html or ansi)
 
   History
     --history=FILE        History file
@@ -160,6 +161,14 @@ const (
 	infoHidden
 )
 
+type highlightType int
+
+const (
+    highlightNone highlightType = iota
+    highlightAnsi
+    highlightHtml
+)
+
 type previewOpts struct {
 	command  string
 	position windowPosition
@@ -188,6 +197,7 @@ type Options struct {
 	Criteria    []criterion
 	Multi       int
 	Ansi        bool
+	Highlight   highlightType
 	Mouse       bool
 	Theme       *tui.ColorTheme
 	Black       bool
@@ -250,6 +260,7 @@ func defaultOptions() *Options {
 		Criteria:    []criterion{byScore, byLength},
 		Multi:       0,
 		Ansi:        false,
+		Highlight:   highlightNone,
 		Mouse:       true,
 		Theme:       tui.EmptyTheme(),
 		Black:       false,
@@ -1147,6 +1158,20 @@ func parseMargin(opt string, margin string) [4]sizeSpec {
 	return defaultMargin()
 }
 
+func parseHighlight(str string) highlightType {
+	switch (str) {
+	case "none":
+		return highlightNone
+	case "ansi":
+		return highlightAnsi
+	case "html":
+		return highlightHtml
+	default:
+		errorExit("invalid highlight type (expected: none / ansi / html)")
+	}
+	return highlightNone
+}
+
 func parseOptions(opts *Options, allArgs []string) {
 	var historyMax int
 	if opts.History == nil {
@@ -1250,6 +1275,9 @@ func parseOptions(opts *Options, allArgs []string) {
 			opts.Ansi = true
 		case "--no-ansi":
 			opts.Ansi = false
+		case "--highlight":
+			opts.Highlight = parseHighlight(
+				nextString(allArgs, &i, "highlight type required (none / ansi / html)"))
 		case "--no-mouse":
 			opts.Mouse = false
 		case "+c", "--no-color":
