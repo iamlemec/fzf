@@ -102,8 +102,8 @@ func (high *Highlighter) close() {
     high.out.WriteString(high.closeTag)
 }
 
-func (high *Highlighter) write(text string) {
-    high.out.WriteString(high.escapeFunc(text))
+func (high *Highlighter) write(text []rune) {
+    high.out.WriteString(high.escapeFunc(string(text)))
 }
 
 func (high *Highlighter) string() (string) {
@@ -114,7 +114,8 @@ func (high *Highlighter) RenderHighlight (item *Item, pattern *Pattern) (string)
     _, _, locs := pattern.MatchItem(item, true, high.slab)
 
     text := item.AsString(false)
-    length := len(text)
+    chars := []rune(text)
+    length := len(chars)
 
     /*
     fmt.Println(text)
@@ -129,14 +130,14 @@ func (high *Highlighter) RenderHighlight (item *Item, pattern *Pattern) (string)
     for off := range makeSegments(length, locs) {
         off0 := off[0]
         off1 := off[1]
-        high.write(text[pos:off0])
+        high.write(chars[pos:off0])
         high.open()
-        high.write(text[off0:off1])
+        high.write(chars[off0:off1])
         high.close()
         pos = off1
     }
 
-    high.write(text[pos:])
+    high.write(chars[pos:])
 
     return high.string()
 }
